@@ -161,7 +161,7 @@ const TriageForm = () => {
                 <div className="hidden lg:flex flex-col gap-5">
                     <div className="bg-white rounded-[2rem] shadow-lg border border-gray-100 overflow-hidden group">
                         <div className="relative h-44">
-                            <img src="https://images.unsplash.com/photo-1576091160550-2173ff9e5eb3?q=80&w=800&auto=format&fit=crop" alt="AI medical analysis" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSNOJvGQI1ee8TYGtMS0JF7kQK9nEvOtS2YBw&ssition-transform duration-700" />
                             <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-primary-blue)]/80 to-transparent" />
                             <p className="absolute bottom-3 left-4 right-4 text-white text-sm font-bold">AI-Based Risk Analysis</p>
                         </div>
@@ -239,14 +239,7 @@ const TriageForm = () => {
                             </div>
                             <div className="space-y-6">
                                 {/* Existing Conditions */}
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-600 mb-2">
-                                        Existing Conditions <span className="text-gray-400 font-normal">(optional)</span>
-                                    </label>
-                                    <textarea name="existingConditions" value={form.existingConditions} onChange={handleChange}
-                                        rows={2} placeholder="e.g. Diabetes, Hypertension, Asthma..."
-                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[var(--color-primary-blue)] focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-gray-50 text-gray-900 font-medium resize-none" />
-                                </div>
+                                
 
                                 {/* ── FREE-TEXT SYMPTOM INPUT ── */}
                                 <div>

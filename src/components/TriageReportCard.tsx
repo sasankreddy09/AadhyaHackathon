@@ -91,25 +91,61 @@ const TriageReportCard = ({ report, generatedAt, onClose }: Props) => {
 
     useEffect(() => {
 
-        if (report.classification === "High" || report.classification === "Critical") {
 
-            navigator.geolocation.getCurrentPosition(async (pos) => {
+        navigator.geolocation.getCurrentPosition(async (pos) => {
 
-                const lat = pos.coords.latitude;
-                const lon = pos.coords.longitude;
+            const lat = pos.coords.latitude;
+            const lon = pos.coords.longitude;
 
-                setLocation({ lat, lon });
-                console.log('User location:', { lat, lon });
-                const data = await fetchHospitals(lat, lon);
-                console.log('Fetched hospitals:', data);
+            setLocation({ lat, lon });
+            console.log('User location:', { lat, lon });
+            const data = await fetchHospitals(lat, lon);
+            console.log('Fetched hospitals:', data);
 
-                setHospitals(data);
+            setHospitals(data);
 
+        });
+
+
+
+    }, [report]);
+
+    const downloadPDF = async () => {
+        try {
+
+            const response = await fetch("http://localhost:8000/analyze/download", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    text: report.contributors.join(", ")
+                })
             });
 
-        }
+            if (!response.ok) {
+                throw new Error("Failed to generate PDF");
+            }
 
-    }, []);
+            const blob = await response.blob();
+
+            const url = window.URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "arogya_raksha_report.pdf";
+
+            document.body.appendChild(a);
+            a.click();
+
+            a.remove();
+            window.URL.revokeObjectURL(url);
+
+        } catch (err) {
+            console.error("PDF download error:", err);
+            alert("Failed to download report.");
+        }
+    };
 
     return (
         <div className={`rounded-[2rem] border-2 ${cfg.border} ${cfg.bg} shadow-2xl overflow-hidden w-[80vw] h-[80vh] flex flex-col transition-all duration-500 animate-slide-up-modal`}>
@@ -185,6 +221,15 @@ const TriageReportCard = ({ report, generatedAt, onClose }: Props) => {
                     </div>
                 </div>
 
+                <div className="flex justify-center mt-4">
+                    <button
+                        onClick={downloadPDF}
+                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-md transition"
+                    >
+                        Download PDF Report
+                    </button>
+                </div>
+
                 {/* ── Symptoms Detected ── */}
                 {report.contributors.length > 0 && (
                     <div>
@@ -216,33 +261,33 @@ const TriageReportCard = ({ report, generatedAt, onClose }: Props) => {
                 </div>
                 {/* {hospitals.length > 0 && ( */}
 
-                    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
 
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-                            Nearby Hospitals
-                        </p>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+                        Nearby Hospitals
+                    </p>
 
-                        {hospitals.map((h, i) => (
-                            <div key={i} className="flex items-center justify-between mb-2">
+                    {hospitals.map((h, i) => (
+                        <div key={i} className="flex items-center justify-between mb-2">
 
-                                <span className="font-semibold text-gray-700">{h.name}</span>
+                            <span className="font-semibold text-gray-700">{h.name}</span>
 
-                                <button
-                                    onClick={() => setSelectedHospital(h)}
-                                    className="px-3 py-1 bg-blue-500 text-white rounded-lg text-xs"
-                                >
-                                    Show on Map
-                                </button>
+                            <button
+                                onClick={() => setSelectedHospital(h)}
+                                className="px-3 py-1 bg-blue-500 text-white rounded-lg text-xs"
+                            >
+                                Show on Map
+                            </button>
 
-                            </div>
-                        ))}
+                        </div>
+                    ))}
 
-                        <MapView
-                            userLocation={location}
-                            hospital={selectedHospital}
-                        />
+                    <MapView
+                        userLocation={location}
+                        hospital={selectedHospital}
+                    />
 
-                    </div>
+                </div>
 
                 {/* )} */}
                 {/* ── CTA for High/Critical ── */}

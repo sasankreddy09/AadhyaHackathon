@@ -408,8 +408,8 @@ const TriageSpeech = () => {
                                     <div className="relative w-64 h-64 rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
                                         <img
                                             src={isListening
-                                                ? "https://imgs.search.brave.com/IPiK7cuyiVnALmYh-nEkbAUkzCyNlja77s6oH0LKZoI/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5pc3RvY2hwaG90/by5jb20vaWQvMTM3/NTE0MzE0Ny9waG90/by9zZXJpb3VzLW1h/bGUtZG9jdG9yLWxp/c3RlbnMtdG8tdW5y/ZWNvZ25pemFibGUt/d29tYW4uanBnP3M9/NjEyeDYxMiZ3PTAm/az0yMCZjPVpKNUdq/d3NMZ3pIQTAzRGox/UFRtd2VzVEpqOVFP/aXRER21SY2V4cDdo/bE09"
-                                                : "https://imgs.search.brave.com/JrtbmPC4leY620-doVDaOCIsjF1Ly29mQmhoG5yq8Xk/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5pc3RvY2twaG90/by5jb20vaWQvMTM4/NzAyODk2Ny9waG90/by9zaG90LW9mLWEt/ZG9jdG9yLXNpdHRp/bmctYWxvbmdzaWRl/LWhpcy1jb2xsZWFn/dWVzLWR1cmluZy1h/LW1lZXRpbmctaW4t/YS1ob3NwaXRhbC1i/b2FyZHJyb29tLmpw/Zz9zPTYxMng2MTIm/dz0wJms9MjAmYz1q/WmhkcnZUREwwbzBZ/TGF1VVR0emc4U3BP/OVNZeGdsb0s2TWpM/aTREOEpSQT0"
+                                                ? "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRO_WeOc3sHtQ9JyegPTl60WsKZJiRgx2kw8w&s"
+                                                : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKZsxjfZk7tM5r047Oa8UPwAgnJi5TOwgluQ&s"
                                             }
                                             alt={isListening ? "AI health assistant analyzing voice input" : "Doctor with headset listening to patient"}
                                             className="w-full h-full object-cover transition-all duration-700"
@@ -419,7 +419,7 @@ const TriageSpeech = () => {
                                             <div className="absolute bottom-4 left-0 right-0 flex justify-center">
                                                 <div className="bg-teal-500 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 animate-pulse shadow-lg">
                                                     <span className="w-2 h-2 bg-white rounded-full"></span>
-                                                    Doctor is listening…
+                                                    AI is listening
                                                 </div>
                                             </div>
                                         )}

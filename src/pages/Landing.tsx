@@ -46,7 +46,7 @@ const Landing = () => {
                     </p>
                     <div className="flex justify-center gap-6 flex-wrap">
                         <button
-                            onClick={() => navigate('/triage')}
+                            onClick={() => navigate('/register')}
                             className="px-8 py-4 text-lg font-bold rounded-full bg-white text-[var(--color-primary-blue)] hover:bg-gray-50 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1 flex items-center gap-2"
                         >
                             Get Started <ArrowRight className="w-5 h-5" />

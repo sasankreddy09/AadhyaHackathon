@@ -3,9 +3,9 @@ export async function fetchHospitals(lat: number, lon: number) {
   const query = `
   [out:json];
   (
-    node["amenity"="hospital"](around:8000,${lat},${lon});
-    way["amenity"="hospital"](around:8000,${lat},${lon});
-    relation["amenity"="hospital"](around:8000,${lat},${lon});
+    node["amenity"="hospital"](around:20000,${lat},${lon});
+    way["amenity"="hospital"](around:20000,${lat},${lon});
+    relation["amenity"="hospital"](around:20000,${lat},${lon});
   );
   out center;
   `;
