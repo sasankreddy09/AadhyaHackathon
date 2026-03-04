@@ -61,7 +61,7 @@ const Register = () => {
     return (
         <div className="min-h-screen flex">
             {/* Left side */}
-            <div className="hidden lg:flex w-5/12 bg-gradient-auth p-12 pt-32 flex-col justify-center text-white relative overflow-hidden">
+            <div className="hidden lg:flex w-5/12 bg-gradient-auth p-12 pt-28 flex-col justify-center text-white relative overflow-hidden">
                 <div className="relative z-10 w-full max-w-lg mx-auto">
                     <h2 className="text-4xl font-extrabold mb-4">Join Arogya Raksha</h2>
                     <p className="text-lg text-teal-100 mb-8">Step into the future of predictive healthcare.</p>
@@ -97,7 +97,7 @@ const Register = () => {
             </div>
 
             {/* Right side */}
-            <div className="w-full lg:w-7/12 flex items-center justify-center p-6 sm:p-12 pt-32 overflow-y-auto bg-[var(--color-bg-base)]">
+            <div className="w-full lg:w-7/12 flex items-center justify-center p-6 sm:p-12 pt-28 overflow-y-auto bg-[var(--color-bg-base)]">
                 <div className="w-full max-w-2xl space-y-8 glass-effect p-8 sm:p-12 my-8">
                     <div className="text-center">
                         <h2 className="mt-2 text-3xl font-bold tracking-tight text-[var(--color-text-base)]">

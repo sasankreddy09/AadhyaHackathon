@@ -32,7 +32,7 @@ const Login = () => {
             */
             setTimeout(() => {
                 localStorage.setItem('token', 'mock_token');
-                navigate('/');
+                navigate('/triage');
             }, 1000);
         } catch (err) {
             setError('An error occurred. Please try again.');
@@ -44,7 +44,7 @@ const Login = () => {
     return (
         <div className="min-h-screen flex">
             {/* Left side (hidden on mobile) */}
-            <div className="hidden lg:flex w-1/2 bg-gradient-auth p-12 pt-32 items-center justify-center text-white relative overflow-hidden">
+            <div className="hidden lg:flex w-1/2 bg-gradient-auth p-12 pt-28 items-center justify-center text-white relative overflow-hidden">
                 <div className="relative z-10 max-w-lg w-full">
                     <h1 className="text-5xl font-bold mb-6 leading-tight">Access Intelligent Health Risk Insights</h1>
                     <p className="text-xl text-white/90">
@@ -80,7 +80,7 @@ const Login = () => {
             </div>
 
             {/* Right side */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 lg:p-24 pt-32 bg-[var(--color-bg-base)]">
+            <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 lg:p-24 pt-28 bg-[var(--color-bg-base)]">
                 <div className="w-full max-w-md space-y-8 glass-effect p-8 sm:p-10">
                     <div className="text-center">
                         <h2 className="mt-6 text-3xl font-bold tracking-tight text-[var(--color-text-base)]">

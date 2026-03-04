@@ -31,7 +31,7 @@ const Landing = () => {
         <div className="min-h-screen bg-[var(--color-bg-base)] text-[var(--color-text-base)] font-sans">
 
             {/* 1. Hero Section */}
-            <section className="relative pt-24 pb-32 overflow-hidden bg-gradient-auth flex flex-col items-center justify-center min-h-[90vh]">
+            <section className="relative pt-28 pb-32 overflow-hidden bg-gradient-auth flex flex-col items-center justify-center min-h-[90vh]">
                 <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=2600&q=80')] opacity-10 bg-cover bg-center mix-blend-overlay"></div>
                 <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-md mb-8 border border-white/30">
@@ -46,12 +46,15 @@ const Landing = () => {
                     </p>
                     <div className="flex justify-center gap-6 flex-wrap">
                         <button
-                            onClick={() => navigate('/register')}
+                            onClick={() => navigate('/triage')}
                             className="px-8 py-4 text-lg font-bold rounded-full bg-white text-[var(--color-primary-blue)] hover:bg-gray-50 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1 flex items-center gap-2"
                         >
                             Get Started <ArrowRight className="w-5 h-5" />
                         </button>
-                        <button className="px-8 py-4 text-lg font-bold rounded-full bg-transparent border-2 border-white text-white hover:bg-white/10 transition-all">
+                        <button
+                            onClick={() => navigate('/triage')}
+                            className="px-8 py-4 text-lg font-bold rounded-full bg-transparent border-2 border-white text-white hover:bg-white/10 transition-all"
+                        >
                             Check Symptoms
                         </button>
                     </div>
