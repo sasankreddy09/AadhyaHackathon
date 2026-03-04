@@ -357,7 +357,7 @@ const Landing = () => {
                     <div className="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm flex flex-col md:flex-row justify-between items-center">
                         <p>&copy; {new Date().getFullYear()} Arogya Raksha. All rights reserved.</p>
                         <p className="mt-2 md:mt-0 flex items-center gap-1">
-                            Made with <Heart className="w-4 h-4 text-red-500" /> for community health.
+                            Made with <Heart className="w-4 h-4 text-red-500" /> by Panch Pandavlu.
                         </p>
                     </div>
                 </div>
