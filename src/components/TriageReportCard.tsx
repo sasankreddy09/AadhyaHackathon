@@ -1,4 +1,9 @@
 import { AlertTriangle, CheckCircle, AlertCircle, XCircle, Activity, Brain, Stethoscope, ShieldCheck, Info, Clock } from 'lucide-react';
+import { useEffect, useState } from "react";
+import MapView from "../MapView"
+import { fetchHospitals } from "../hospitals";
+
+
 
 export interface TriageReport {
     risk_score: number;
@@ -79,7 +84,32 @@ const LEVEL_CONFIG = {
 
 const TriageReportCard = ({ report, generatedAt, onClose }: Props) => {
     const cfg = LEVEL_CONFIG[report.classification] ?? LEVEL_CONFIG['High'];
+    const [location, setLocation] = useState<any>(null);
+    const [hospitals, setHospitals] = useState<any[]>([]);
+    const [selectedHospital, setSelectedHospital] = useState<any>(null);
     const scorePercent = Math.min(100, Math.max(0, report.risk_score));
+
+    useEffect(() => {
+
+        if (report.classification === "High" || report.classification === "Critical") {
+
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+
+                const lat = pos.coords.latitude;
+                const lon = pos.coords.longitude;
+
+                setLocation({ lat, lon });
+                console.log('User location:', { lat, lon });
+                const data = await fetchHospitals(lat, lon);
+                console.log('Fetched hospitals:', data);
+
+                setHospitals(data);
+
+            });
+
+        }
+
+    }, []);
 
     return (
         <div className={`rounded-[2rem] border-2 ${cfg.border} ${cfg.bg} shadow-2xl overflow-hidden w-[80vw] h-[80vh] flex flex-col transition-all duration-500 animate-slide-up-modal`}>
@@ -151,7 +181,7 @@ const TriageReportCard = ({ report, generatedAt, onClose }: Props) => {
                     </div>
                     <div className="ml-auto text-right shrink-0">
                         <p className="text-xs text-gray-500">Confidence</p>
-                        <p className={`font-extrabold text-lg ${cfg.accentText}`}>{report.confidence.toFixed(1)}%</p>
+                        <p className={`font-extrabold text-lg ${cfg.accentText}`}>{report.confidence}%</p>
                     </div>
                 </div>
 
@@ -184,7 +214,37 @@ const TriageReportCard = ({ report, generatedAt, onClose }: Props) => {
                     </p>
                     <p className="text-gray-700 text-sm leading-relaxed">{report.patient_education}</p>
                 </div>
+                {/* {hospitals.length > 0 && ( */}
 
+                    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+                            Nearby Hospitals
+                        </p>
+
+                        {hospitals.map((h, i) => (
+                            <div key={i} className="flex items-center justify-between mb-2">
+
+                                <span className="font-semibold text-gray-700">{h.name}</span>
+
+                                <button
+                                    onClick={() => setSelectedHospital(h)}
+                                    className="px-3 py-1 bg-blue-500 text-white rounded-lg text-xs"
+                                >
+                                    Show on Map
+                                </button>
+
+                            </div>
+                        ))}
+
+                        <MapView
+                            userLocation={location}
+                            hospital={selectedHospital}
+                        />
+
+                    </div>
+
+                {/* )} */}
                 {/* ── CTA for High/Critical ── */}
                 {cfg.cta && (
                     <div className={`flex items-center gap-4 px-6 py-5 rounded-2xl ${cfg.accent} shadow-xl`}>

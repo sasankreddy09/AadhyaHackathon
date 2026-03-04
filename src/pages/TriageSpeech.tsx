@@ -39,11 +39,23 @@ const SoundWaves = ({ active }: { active: boolean }) => (
     </div>
 );
 
+const LANGUAGES = [
+    { code: 'en-IN', label: 'English' },
+    { code: 'hi-IN', label: 'Hindi' },
+    { code: 'te-IN', label: 'Telugu' },
+    { code: 'ta-IN', label: 'Tamil' },
+];
+
 const TriageSpeech = () => {
     const navigate = useNavigate();
     const [isListening, setIsListening] = useState(false);
+    const [isTranslating, setIsTranslating] = useState(false);
+    const [language, setLanguage] = useState('en-IN');
     const [transcript, setTranscript] = useState('');
+    const [translatedText, setTranslatedText] = useState('');
+    const [translationError, setTranslationError] = useState(false);
     const [report, setReport] = useState<TriageReport | null>(null);
+    const transcriptRef = useRef('');
 
     // Mock speech recognition setup
     const [detectedSymptoms, setDetectedSymptoms] = useState<string[]>([]);
@@ -58,18 +70,65 @@ const TriageSpeech = () => {
             (window as unknown as { SpeechRecognition?: new () => unknown }).SpeechRecognition;
         if (SpeechRecognition) {
             const r = new SpeechRecognition() as {
-                continuous: boolean; interimResults: boolean; lang: string;
-                start: () => void; stop: () => void;
+                continuous: boolean;
+                interimResults: boolean;
+                lang: string;
+                start: () => void;
+                stop: () => void;
                 onresult: ((e: SpeechRecognitionEvent) => void) | null;
+                onend: (() => void) | null;
             };
+
             r.continuous = true;
             r.interimResults = true;
-            r.lang = 'en-IN';
-            r.onresult = null;
+            r.lang = language;
+
+            /* IMPORTANT: trigger translation after speech recognition fully stops */
+            r.onend = () => {
+                const finalText = transcriptRef.current;
+
+                if (finalText.trim()) {
+                    translateToEnglish(finalText);
+                }
+            };
+
             recognitionRef.current = r;
         }
         return () => recognitionRef.current?.stop();
-    }, []);
+    }, [language]);
+
+    // Translate text to English using LibreTranslate API
+    const translateToEnglish = async (text: string) => {
+        if (!text.trim() || language.startsWith('en')) {
+            setTranslatedText(text);
+            detectSymptoms(text);
+            return;
+        }
+
+        setIsTranslating(true);
+        setTranslationError(false);
+
+        try {
+            const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${language.split('-')[0]}&tl=en&dt=t&q=${encodeURIComponent(text)}`;
+
+            const res = await fetch(url);
+            const data = await res.json();
+
+            const translated = data[0].map((item: any) => item[0]).join('');
+
+            setTranslatedText(translated);
+            detectSymptoms(translated);
+
+        } catch (err) {
+            console.error(err);
+
+            setTranslationError(true);
+            setTranslatedText(text);
+            detectSymptoms(text);
+        } finally {
+            setIsTranslating(false);
+        }
+    };
 
     const detectSymptoms = (text: string) => {
         const lower = text.toLowerCase();
@@ -85,17 +144,16 @@ const TriageSpeech = () => {
         setIsListening(true);
         recognitionRef.current.onresult = (e: SpeechRecognitionEvent) => {
             let final = '';
-            let interim = '';
             for (let i = e.resultIndex; i < e.results.length; i++) {
-                const t = e.results[i][0].transcript;
-                if (e.results[i].isFinal) final += t;
-                else interim += t;
+                if (e.results[i].isFinal) {
+                    final += e.results[i][0].transcript;
+                }
             }
-            const combined = (final || interim).trim();
+            const combined = final.trim();
             if (combined) {
                 setTranscript(prev => {
                     const updated = (prev + ' ' + combined).trim();
-                    detectSymptoms(updated);
+                    transcriptRef.current = updated;   // IMPORTANT
                     return updated;
                 });
             }
@@ -113,28 +171,49 @@ const TriageSpeech = () => {
         else startListening();
     };
 
-    const handleAnalyze = () => {
-        if (detectedSymptoms.length === 0 && !transcript.trim()) return;
+    const handleAnalyze = async () => {
 
-        const finalSymptoms = detectedSymptoms.length > 0 ? detectedSymptoms : [transcript.trim()];
+    const textToUse = translatedText || transcript;
 
-        const mockReport: TriageReport = {
-            risk_score: 82,
-            classification: 'Critical',
-            recommendation: 'Emergency',
-            predicted_condition: 'Acute Respiratory Distress / Chest Infection',
-            confidence: 76.4,
-            contributors: finalSymptoms,
-            explanation: `⚠️ The detected symptoms (${finalSymptoms.join(', ')}) from your voice analysis indicate a critical risk condition requiring immediate medical attention. We strongly advise seeking emergency care.`,
-            patient_education: "Follow your doctor's advice immediately. Do not attempt self-medication.",
-            disclaimer: 'This system is for early risk screening only and not a medical diagnosis. Always consult a healthcare professional.',
-        };
-        setReport(mockReport);
-    };
+    if (!textToUse.trim()) return;
+
+    try {
+
+        const response = await fetch("http://localhost:8000/analyze", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                text: textToUse
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error("API request failed");
+        }
+
+        const data = await response.json();
+
+        console.log("AI Response:", data);
+
+        setReport(data);
+
+    } catch (err) {
+
+        console.error("Error analyzing symptoms:", err);
+
+        alert("Unable to analyze symptoms right now.");
+
+    }
+
+};
 
     const reset = () => {
         stopListening();
         setTranscript('');
+        setTranslatedText('');
+        setTranslationError(false);
         setDetectedSymptoms([]);
         setReport(null); // Also reset report when resetting
     };
@@ -175,10 +254,24 @@ const TriageSpeech = () => {
                         <div className="flex flex-col gap-6">
                             {/* Mic Card */}
                             <div className={`bg-blue-50/80 backdrop-blur-xl border-2 rounded-[2rem] shadow-xl p-8 flex flex-col items-center transition-all duration-500 ${isListening ? 'border-teal-400 shadow-teal-300/30 shadow-2xl' : 'border-blue-100'}`}>
-                                {/* Status label */}
-                                <div className={`text-sm font-bold px-4 py-1.5 rounded-full mb-6 transition-all ${isListening ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-500'
-                                    }`}>
-                                    {isListening ? '🔴 Recording — speak now' : 'Ready to listen'}
+                                {/* Status label & Language Select */}
+                                <div className="flex flex-col items-center gap-3 mb-6 w-full">
+                                    <div className={`text-sm font-bold px-4 py-1.5 rounded-full transition-all ${isListening ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-500'}`}>
+                                        {isListening ? '🔴 Recording — speak now' : 'Ready to listen'}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <label className="text-xs font-bold text-gray-500 uppercase">Language:</label>
+                                        <select
+                                            value={language}
+                                            onChange={(e) => setLanguage(e.target.value)}
+                                            disabled={isListening}
+                                            className="bg-white border border-gray-200 text-sm font-bold text-gray-700 py-1.5 px-3 rounded-lg focus:ring-2 focus:ring-teal-200 focus:border-teal-400 outline-none disabled:opacity-50"
+                                        >
+                                            {LANGUAGES.map(l => (
+                                                <option key={l.code} value={l.code}>{l.label}</option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
 
                                 {/* Mic button with pulsing rings and glow */}
@@ -214,14 +307,14 @@ const TriageSpeech = () => {
                                 </p>
                             </div>
 
-                            {/* Transcript */}
+                            {/* Original Transcript */}
                             <div className="bg-teal-50/80 backdrop-blur-xl border border-teal-100 rounded-[2rem] shadow-lg p-6">
                                 <div className="flex items-center justify-between mb-3">
                                     <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                                        <BrainCircuit className="w-4 h-4 text-[var(--color-primary-blue)]" />
-                                        Transcribed Text
+                                        <Mic className="w-4 h-4 text-[var(--color-primary-blue)]" />
+                                        Your Speech {language !== 'en-IN' && `(${LANGUAGES.find(l => l.code === language)?.label})`}
                                     </label>
-                                    {transcript && (
+                                    {(transcript || translatedText) && (
                                         <button onClick={reset} className="text-xs text-gray-400 hover:text-red-500 flex items-center gap-1 font-medium transition-colors">
                                             <RefreshCw className="w-3 h-3" /> Reset
                                         </button>
@@ -229,11 +322,45 @@ const TriageSpeech = () => {
                                 </div>
                                 <textarea
                                     value={transcript}
-                                    onChange={(e) => { setTranscript(e.target.value); detectSymptoms(e.target.value); }}
-                                    rows={5}
-                                    placeholder="Your speech will appear here… You can also type or edit it manually."
+                                    onChange={(e) => setTranscript(e.target.value)}
+                                    rows={3}
+                                    placeholder="Your speech will appear here…"
                                     className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-[var(--color-teal-accent)] focus:ring-2 focus:ring-teal-100 outline-none transition-all bg-gray-50 text-gray-900 font-medium resize-none text-base"
                                 />
+                            </div>
+
+                            {/* Translated English Transcript */}
+                            <div className="bg-blue-50/80 backdrop-blur-xl border border-blue-100 rounded-[2rem] shadow-lg p-6 relative">
+                                <div className="flex items-center justify-between mb-3">
+                                    <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                                        <BrainCircuit className="w-4 h-4 text-[var(--color-primary-blue)]" />
+                                        Translated to English
+                                    </label>
+                                    {isTranslating && (
+                                        <span className="text-xs font-bold text-teal-600 animate-pulse flex items-center gap-1">
+                                            <RefreshCw className="w-3 h-3 animate-spin mx-1" /> Translating...
+                                        </span>
+                                    )}
+                                </div>
+                                <textarea
+                                    value={translatedText || (isTranslating ? 'Translating...' : '')}
+                                    onChange={(e) => {
+                                        setTranslatedText(e.target.value);
+                                        detectSymptoms(e.target.value);
+                                    }}
+                                    readOnly={isTranslating}
+                                    rows={3}
+                                    placeholder="English translation will appear here…"
+                                    className={`w-full px-4 py-3 rounded-xl border-2 transition-all font-medium resize-none text-base ${translationError
+                                        ? 'border-orange-300 bg-orange-50 text-orange-900 focus:border-orange-400 focus:ring-orange-200'
+                                        : 'border-blue-200 bg-white text-gray-900 focus:border-[var(--color-primary-blue)] focus:ring-2 focus:ring-blue-100 outline-none'
+                                        }`}
+                                />
+                                {translationError && (
+                                    <p className="text-xs font-bold text-orange-600 mt-2">
+                                        ⚠️ Translation unavailable — using original speech.
+                                    </p>
+                                )}
                             </div>
 
                             {/* Detected Symptoms */}
@@ -256,7 +383,7 @@ const TriageSpeech = () => {
                             {/* Analyze Button */}
                             <button
                                 onClick={handleAnalyze}
-                                disabled={(!transcript.trim() && detectedSymptoms.length === 0) || isListening}
+                                disabled={(!translatedText.trim() && !transcript.trim() && detectedSymptoms.length === 0) || isListening || isTranslating}
                                 className="w-full py-4 bg-gradient-auth text-white text-lg font-extrabold rounded-2xl shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
                             >
                                 Analyze Risk

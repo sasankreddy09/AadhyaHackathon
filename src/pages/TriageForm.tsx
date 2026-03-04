@@ -69,29 +69,39 @@ const TriageForm = () => {
         setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (symptomTags.length === 0 && !symptomText.trim()) {
-            setSymptomError('Please enter at least one symptom.');
-            return;
-        }
-        const finalSymptoms = symptomTags.length > 0 ? symptomTags : [symptomText.trim()];
-        console.log('Submitted:', { ...form, symptoms: finalSymptoms });
+   const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-        // Mock report — replace with real API call
-        const mockReport: TriageReport = {
-            risk_score: 79,
-            classification: 'Critical',
-            recommendation: 'Emergency',
-            predicted_condition: 'Angina / Chest Pain',
-            confidence: 61.9,
-            contributors: finalSymptoms,
-            explanation: `⚠️ Your symptoms (${finalSymptoms.join(', ')}) indicate a critical risk condition — Angina / Chest Pain. This requires IMMEDIATE emergency care. Please call emergency services or go to the nearest hospital right away.`,
-            patient_education: "Follow your doctor's advice for managing Angina / Chest Pain.",
-            disclaimer: 'This system is for early risk screening only and not a medical diagnosis. Always consult a healthcare professional.',
-        };
-        setReport(mockReport);
-    };
+    if (symptomTags.length === 0 && !symptomText.trim()) {
+        setSymptomError('Please enter at least one symptom.');
+        return;
+    }
+
+    const finalSymptoms = symptomTags.length > 0 ? symptomTags : [symptomText.trim()];
+
+    const symptomString = finalSymptoms.join(", ");
+
+    try {
+        const response = await fetch("http://localhost:8000/analyze", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                text: symptomString
+            }),
+        });
+
+        const data = await response.json();
+
+        console.log("API Response:", data);
+
+        setReport(data);
+
+    } catch (error) {
+        console.error("Error calling API:", error);
+    }
+};
 
     const canSubmit = (symptomTags.length > 0 || symptomText.trim().length > 0) && form.severity && form.duration;
 
