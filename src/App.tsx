@@ -6,6 +6,7 @@ import Register from './pages/Register';
 import Triage from './pages/Triage';
 import TriageForm from './pages/TriageForm';
 import TriageSpeech from './pages/TriageSpeech';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function AppContent() {
   return (
@@ -15,9 +16,21 @@ function AppContent() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/triage" element={<Triage />} />
-        <Route path="/triage/form" element={<TriageForm />} />
-        <Route path="/triage/speech" element={<TriageSpeech />} />
+        <Route path="/triage" element={
+          <ProtectedRoute>
+            <Triage />
+          </ProtectedRoute>
+        } />
+        <Route path="/triage/form" element={
+          <ProtectedRoute>
+            <TriageForm />
+          </ProtectedRoute>
+        } />
+        <Route path="/triage/speech" element={
+          <ProtectedRoute>
+            <TriageSpeech />
+          </ProtectedRoute>
+        } />
       </Routes>
     </>
   );

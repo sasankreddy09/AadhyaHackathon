@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, User, Phone, Activity, ChevronRight, ShieldCheck, HeartPulse, BrainCircuit, Stethoscope, X, AlertCircle } from 'lucide-react';
+import { FileText, User, Phone, Activity, ChevronRight, ShieldCheck, HeartPulse, BrainCircuit, Stethoscope, X, AlertCircle, Loader2 } from 'lucide-react';
 import TriageReportCard from '../components/TriageReportCard';
 import type { TriageReport } from '../components/TriageReportCard';
 
@@ -35,6 +35,7 @@ const TriageForm = () => {
     const [symptomTags, setSymptomTags] = useState<string[]>([]);
     const [symptomError, setSymptomError] = useState('');
     const [report, setReport] = useState<TriageReport | null>(null);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [form, setForm] = useState({
         fullName: '', age: '', gender: '', phone: '',
         existingConditions: '', duration: '', severity: '',
@@ -69,39 +70,38 @@ const TriageForm = () => {
         setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
-   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
 
-    if (symptomTags.length === 0 && !symptomText.trim()) {
-        setSymptomError('Please enter at least one symptom.');
-        return;
-    }
+        if (symptomTags.length === 0 && !symptomText.trim()) {
+            setSymptomError('Please enter at least one symptom.');
+            return;
+        }
 
-    const finalSymptoms = symptomTags.length > 0 ? symptomTags : [symptomText.trim()];
+        const finalSymptoms = symptomTags.length > 0 ? symptomTags : [symptomText.trim()];
+        const symptomString = finalSymptoms.join(", ");
 
-    const symptomString = finalSymptoms.join(", ");
+        setIsAnalyzing(true);
+        try {
+            const response = await fetch("http://localhost:8000/analyze", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    text: symptomString
+                }),
+            });
 
-    try {
-        const response = await fetch("http://localhost:8000/analyze", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                text: symptomString
-            }),
-        });
-
-        const data = await response.json();
-
-        console.log("API Response:", data);
-
-        setReport(data);
-
-    } catch (error) {
-        console.error("Error calling API:", error);
-    }
-};
+            const data = await response.json();
+            console.log("API Response:", data);
+            setReport(data);
+        } catch (error) {
+            console.error("Error calling API:", error);
+        } finally {
+            setIsAnalyzing(false);
+        }
+    };
 
     const canSubmit = (symptomTags.length > 0 || symptomText.trim().length > 0) && form.severity && form.duration;
 
@@ -358,11 +358,21 @@ const TriageForm = () => {
 
                         <button
                             type="submit"
-                            disabled={!canSubmit}
-                            className="w-full py-5 bg-gradient-soft text-white text-xl font-extrabold rounded-2xl shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                            disabled={!canSubmit || isAnalyzing}
+                            className="w-full py-5 bg-gradient-soft text-white text-xl font-extrabold rounded-2xl shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 relative overflow-hidden"
                         >
-                            Analyze Risk
-                            <ChevronRight className="w-6 h-6" />
+                            {isAnalyzing ? (
+                                <>
+                                    <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                                    <Loader2 className="w-6 h-6 animate-spin" />
+                                    Analyzing Risk...
+                                </>
+                            ) : (
+                                <>
+                                    Analyze Risk
+                                    <ChevronRight className="w-6 h-6" />
+                                </>
+                            )}
                         </button>
                     </form>
 

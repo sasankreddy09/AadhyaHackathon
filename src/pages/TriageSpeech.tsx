@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mic, MicOff, ChevronRight, Activity, RefreshCw, BrainCircuit } from 'lucide-react';
+import { Mic, MicOff, ChevronRight, Activity, RefreshCw, BrainCircuit, Loader2 } from 'lucide-react';
 import TriageReportCard from '../components/TriageReportCard';
 import type { TriageReport } from '../components/TriageReportCard';
 
@@ -55,6 +55,7 @@ const TriageSpeech = () => {
     const [translatedText, setTranslatedText] = useState('');
     const [translationError, setTranslationError] = useState(false);
     const [report, setReport] = useState<TriageReport | null>(null);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
     const transcriptRef = useRef('');
 
     // Mock speech recognition setup
@@ -172,42 +173,35 @@ const TriageSpeech = () => {
     };
 
     const handleAnalyze = async () => {
+        const textToUse = translatedText || transcript;
+        if (!textToUse.trim()) return;
 
-    const textToUse = translatedText || transcript;
+        setIsAnalyzing(true);
+        try {
+            const response = await fetch("http://localhost:8000/analyze", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    text: textToUse
+                })
+            });
 
-    if (!textToUse.trim()) return;
+            if (!response.ok) {
+                throw new Error("API request failed");
+            }
 
-    try {
-
-        const response = await fetch("http://localhost:8000/analyze", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                text: textToUse
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error("API request failed");
+            const data = await response.json();
+            console.log("AI Response:", data);
+            setReport(data);
+        } catch (err) {
+            console.error("Error analyzing symptoms:", err);
+            alert("Unable to analyze symptoms right now.");
+        } finally {
+            setIsAnalyzing(false);
         }
-
-        const data = await response.json();
-
-        console.log("AI Response:", data);
-
-        setReport(data);
-
-    } catch (err) {
-
-        console.error("Error analyzing symptoms:", err);
-
-        alert("Unable to analyze symptoms right now.");
-
-    }
-
-};
+    };
 
     const reset = () => {
         stopListening();
@@ -383,11 +377,21 @@ const TriageSpeech = () => {
                             {/* Analyze Button */}
                             <button
                                 onClick={handleAnalyze}
-                                disabled={(!translatedText.trim() && !transcript.trim() && detectedSymptoms.length === 0) || isListening || isTranslating}
-                                className="w-full py-4 bg-gradient-auth text-white text-lg font-extrabold rounded-2xl shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                                disabled={(!translatedText.trim() && !transcript.trim() && detectedSymptoms.length === 0) || isListening || isTranslating || isAnalyzing}
+                                className="w-full py-4 bg-gradient-auth text-white text-lg font-extrabold rounded-2xl shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 relative overflow-hidden"
                             >
-                                Analyze Risk
-                                <ChevronRight className="w-5 h-5" />
+                                {isAnalyzing ? (
+                                    <>
+                                        <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                                        <Loader2 className="w-6 h-6 animate-spin" />
+                                        Analyzing Risk...
+                                    </>
+                                ) : (
+                                    <>
+                                        Analyze Risk
+                                        <ChevronRight className="w-5 h-5" />
+                                    </>
+                                )}
                             </button>
 
                             <button onClick={() => navigate('/triage')} className="text-white/70 hover:text-white text-sm font-medium flex items-center gap-1 mx-auto transition-colors">
