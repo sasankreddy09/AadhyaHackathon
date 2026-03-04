@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary-blue: #2563EB;
+  --color-health-green: #22C55E;
+  --color-teal-accent: #14B8A6;
+  --color-bg-base: #F8FAFC;
+  --color-text-base: #1F2937;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply antialiased bg-[var(--color-bg-base)] text-[var(--color-text-base)] m-0 p-0 font-sans;
+  }
+}
+
+@layer utilities {
+  .bg-gradient-auth {
+    background: linear-gradient(135deg, var(--color-primary-blue), var(--color-teal-accent));
+  }
+
+  .glass-effect {
+    @apply backdrop-blur-3xl bg-white/95 rounded-[3rem] shadow-xl border border-white/20;
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@utility animate-marquee {
+  animation: marquee 20s linear infinite;
+}
