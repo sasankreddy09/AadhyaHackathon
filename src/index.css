@@ -37,6 +37,10 @@
     background: linear-gradient(135deg, var(--color-primary-blue), var(--color-teal-accent));
   }
 
+  .bg-gradient-soft {
+    background: linear-gradient(135deg, #3b82f6, #2dd4bf, #4ade80);
+  }
+
   .glass-effect {
     @apply backdrop-blur-3xl bg-white/95 rounded-[3rem] shadow-xl border border-white/20;
   }
@@ -169,4 +173,21 @@
 
 @utility animate-mic-glow {
   animation: micGlow 1.5s ease-in-out infinite;
+}
+
+/* Modal Slide Up Animation */
+@keyframes slideUpModal {
+  from {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@utility animate-slide-up-modal {
+  animation: slideUpModal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
