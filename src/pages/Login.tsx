@@ -36,22 +36,17 @@ const Login = () => {
 
             if (response.ok) {
 
-                // Save JWT token
                 localStorage.setItem("token", data.access_token);
-
-                // Optional user name
                 localStorage.setItem("user", data.name);
 
                 navigate("/triage");
 
             } else {
-              setError('Invalid credentials');
+
+                setError(data.detail || "Invalid credentials");
+
             }
-            
-            setTimeout(() => {
-                localStorage.setItem('token', 'mock_token');
-                navigate('/triage');
-            }, 1000);
+
         } catch (err) {
 
             setError("Unable to connect to server");
@@ -61,7 +56,6 @@ const Login = () => {
             setLoading(false);
 
         }
-
     };
 
     return (
