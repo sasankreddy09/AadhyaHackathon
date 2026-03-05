@@ -91,6 +91,7 @@ const TriageReportCard = ({ report, generatedAt, onClose }: Props) => {
 
     useEffect(() => {
 
+        if (!navigator.geolocation) return;
 
         navigator.geolocation.getCurrentPosition(async (pos) => {
 
@@ -98,22 +99,20 @@ const TriageReportCard = ({ report, generatedAt, onClose }: Props) => {
             const lon = pos.coords.longitude;
 
             setLocation({ lat, lon });
-            console.log('User location:', { lat, lon });
-            const data = await fetchHospitals(lat, lon);
-            console.log('Fetched hospitals:', data);
 
-            setHospitals(data);
+            const data = await fetchHospitals(lat, lon);
+
+            // Limit hospitals for faster map rendering
+            setHospitals(data.slice(0, 10));
 
         });
 
-
-
-    }, [report]);
+    }, []);
 
     const downloadPDF = async () => {
         try {
 
-            const response = await fetch("http://localhost:8000/analyze/download", {
+            const response = await fetch("https://anandanaidu-aadhya-backend.hf.space/analyze/download", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

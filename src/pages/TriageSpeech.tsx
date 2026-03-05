@@ -46,6 +46,36 @@ const LANGUAGES = [
     { code: 'ta-IN', label: 'Tamil' },
 ];
 
+const translateJsonValues = async (obj: any, targetLangCode: string): Promise<any> => {
+    if (typeof obj === 'string') {
+        try {
+            const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${targetLangCode}&dt=t&q=${encodeURIComponent(obj)}`;
+            const res = await fetch(url);
+            const data = await res.json();
+            return data[0].map((item: any) => item[0]).join('');
+        } catch (e) {
+            console.error("Translation error", e);
+            return obj;
+        }
+    } else if (Array.isArray(obj)) {
+        const promises = obj.map(item => translateJsonValues(item, targetLangCode));
+        return Promise.all(promises);
+    } else if (typeof obj === 'object' && obj !== null) {
+        const newObj: any = {};
+        const keys = Object.keys(obj);
+        const promises = keys.map(async (key) => {
+            if (key === 'classification' || key === 'risk_score' || key === 'confidence') {
+                newObj[key] = obj[key];
+            } else {
+                newObj[key] = await translateJsonValues(obj[key], targetLangCode);
+            }
+        });
+        await Promise.all(promises);
+        return newObj;
+    }
+    return obj;
+};
+
 const TriageSpeech = () => {
     const navigate = useNavigate();
     const [isListening, setIsListening] = useState(false);
@@ -178,7 +208,7 @@ const TriageSpeech = () => {
 
         setIsAnalyzing(true);
         try {
-            const response = await fetch("http://localhost:8000/analyze", {
+            const response = await fetch("https://anandanaidu-aadhya-backend.hf.space/analyze", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -193,8 +223,15 @@ const TriageSpeech = () => {
             }
 
             const data = await response.json();
-            console.log("AI Response:", data);
-            setReport(data);
+
+            let finalReport = data;
+
+            if (language !== "en-IN") {
+                const targetLangCode = language.split('-')[0];
+                finalReport = await translateJsonValues(data, targetLangCode);
+            }
+
+            setReport(finalReport);
         } catch (err) {
             console.error("Error analyzing symptoms:", err);
             alert("Unable to analyze symptoms right now.");
@@ -408,8 +445,8 @@ const TriageSpeech = () => {
                                     <div className="relative w-64 h-64 rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
                                         <img
                                             src={isListening
-                                                ? "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRO_WeOc3sHtQ9JyegPTl60WsKZJiRgx2kw8w&s"
-                                                : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKZsxjfZk7tM5r047Oa8UPwAgnJi5TOwgluQ&s"
+                                                ? "https://cdn-flnkc.nitrocdn.com/KFlCDdxHmXxwfeAbWXbVTSQOtYohfXjT/assets/images/optimized/rev-f9a4404/static.voices.com/wp-content/uploads/2023/03/ai-voice-projects-header.jpg"
+                                                : "https://www.informationdifference.com/wp-content/uploads/the-ai-doctor-will-see-you-now.jpg"
                                             }
                                             alt={isListening ? "AI health assistant analyzing voice input" : "Doctor with headset listening to patient"}
                                             className="w-full h-full object-cover transition-all duration-700"
@@ -419,7 +456,7 @@ const TriageSpeech = () => {
                                             <div className="absolute bottom-4 left-0 right-0 flex justify-center">
                                                 <div className="bg-teal-500 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 animate-pulse shadow-lg">
                                                     <span className="w-2 h-2 bg-white rounded-full"></span>
-                                                    AI is listening
+                                                    AI is listening…
                                                 </div>
                                             </div>
                                         )}

@@ -83,7 +83,7 @@ const TriageForm = () => {
 
         setIsAnalyzing(true);
         try {
-            const response = await fetch("http://localhost:8000/analyze", {
+            const response = await fetch("https://anandanaidu-aadhya-backend.hf.space/analyze", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
