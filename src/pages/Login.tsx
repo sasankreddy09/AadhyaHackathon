@@ -38,6 +38,11 @@ const Login = () => {
 
                 localStorage.setItem("token", data.access_token);
                 localStorage.setItem("user", data.name);
+                localStorage.setItem("user_email", email);
+                localStorage.setItem("email", email);
+                if (data.user_id) {
+                    localStorage.setItem("user_id", data.user_id);
+                }
 
                 navigate("/triage");
 

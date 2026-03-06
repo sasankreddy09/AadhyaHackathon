@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ShieldPlus, Menu, X } from 'lucide-react';
+import { ShieldPlus, Menu, X, Bell, User } from 'lucide-react';
 
 const Navbar = () => {
 
@@ -11,7 +11,7 @@ const Navbar = () => {
     const isLoggedIn = !!localStorage.getItem("token");
 
     const navLinks = isLoggedIn
-        ? [{ label: "Triage", href: "/triage" }]
+        ? [{ label: "Triage", href: "/triage" }, { label: "Doctors", href: "/doctors" }]
         : [
             { label: "Home", href: "/#" },
             { label: "Features", href: "/#features" },
@@ -55,15 +55,34 @@ const Navbar = () => {
 
                     {isLoggedIn ? (
 
-                        <button
-                            onClick={() => {
-                                localStorage.removeItem('token');
-                                navigate('/');
-                            }}
-                            className="bg-orange-50 text-orange-600 border border-orange-200 px-6 py-2.5 rounded-full font-bold hover:bg-orange-500 hover:text-white transition-all"
-                        >
-                            Logout
-                        </button>
+                        <>
+                            <button
+                                onClick={() => navigate('/notifications')}
+                                className="relative p-2 text-gray-600 hover:text-[var(--color-primary-blue)] transition-colors"
+                                title="Notifications"
+                            >
+                                <Bell className="w-6 h-6" />
+                                <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full" />
+                            </button>
+
+                            <button
+                                onClick={() => navigate('/profile')}
+                                className="p-2 text-gray-600 hover:text-[var(--color-primary-blue)] transition-colors"
+                                title="Profile"
+                            >
+                                <User className="w-6 h-6" />
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    localStorage.removeItem('token');
+                                    navigate('/');
+                                }}
+                                className="bg-orange-50 text-orange-600 border border-orange-200 px-6 py-2.5 rounded-full font-bold hover:bg-orange-500 hover:text-white transition-all"
+                            >
+                                Logout
+                            </button>
+                        </>
 
                     ) : (
 
@@ -117,6 +136,29 @@ const Navbar = () => {
                             {link.label}
                         </button>
                     ))}
+
+                    {isLoggedIn && (
+                        <>
+                            <button
+                                onClick={() => {
+                                    navigate('/notifications');
+                                    setIsMobileMenuOpen(false);
+                                }}
+                                className="block w-full text-left py-3 font-semibold text-[var(--color-primary-blue)]"
+                            >
+                                Notifications
+                            </button>
+                            <button
+                                onClick={() => {
+                                    navigate('/profile');
+                                    setIsMobileMenuOpen(false);
+                                }}
+                                className="block w-full text-left py-3 font-semibold text-[var(--color-primary-blue)]"
+                            >
+                                Profile
+                            </button>
+                        </>
+                    )}
 
                 </div>
             )}

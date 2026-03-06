@@ -40,6 +40,12 @@ const Register = () => {
             if (response.ok) {
 
                 localStorage.setItem('token', data.access_token);
+                localStorage.setItem('user', formData.name);
+                localStorage.setItem('user_email', formData.email);
+                localStorage.setItem('email', formData.email);
+                if (data.user_id) {
+                    localStorage.setItem('user_id', data.user_id);
+                }
 
                 navigate('/login');
 

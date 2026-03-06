@@ -7,6 +7,9 @@ import Triage from './pages/Triage';
 import TriageForm from './pages/TriageForm';
 import TriageSpeech from './pages/TriageSpeech';
 import ProtectedRoute from './components/ProtectedRoute';
+import Doctors from './pages/doctor';
+import Notifications from './pages/Notifications';
+import Profile from './pages/Profile'; 
 
 function AppContent() {
   return (
@@ -29,6 +32,21 @@ function AppContent() {
         <Route path="/triage/speech" element={
           <ProtectedRoute>
             <TriageSpeech />
+          </ProtectedRoute>
+        } />
+        <Route path="/doctors" element={
+          <ProtectedRoute>
+            <Doctors />
+          </ProtectedRoute>
+        } />
+        <Route path="/notifications" element={
+          <ProtectedRoute>
+            <Notifications />
+          </ProtectedRoute>
+        } />
+        <Route path="/profile" element={
+          <ProtectedRoute>
+            <Profile />
           </ProtectedRoute>
         } />
       </Routes>
