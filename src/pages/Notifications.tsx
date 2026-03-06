@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Bell, Trash2, CheckCircle, AlertCircle, Info, MapPin, Loader } from 'lucide-react';
 
 interface Notification {
